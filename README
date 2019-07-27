@@ -1,0 +1,180 @@
+x HTTP request with the  built-in libraries
+x Parsing and generating URLs
+x URL encoding
+x HTTP request with Request library
+x How to stream down a large file
+x Using regular expression to match <scrtpt elements
+x Beautiful Soup library
+- Looking for URLs that have query params
+- Crawling a domain with a threadpool
+
+
+
+
+
+
+
+
+
+
+
+# Needs Python3
+# HHTP GET Request with standart library 
+
+try:
+    # for python 3
+    from urllib.request import urlopen, Request
+except:
+    # for python 2
+    from urllib2 import urlopen, Request
+
+# open URL with string
+# 
+# HTTP error 403 in Python 3
+# This is probably because of mod_security or some similar server security 
+# feature which blocks known spider/bot user agents 
+# (urllib uses something like python urllib/3.3.0, it's easily detected).
+# setting a known browser user agent will fix the issue (use Request):
+
+#response = urlopen('http://www.devdungeon.com')
+#print(response.read())
+
+#prebuild the request
+request = Request('http://www.devdungeon.com')
+request.add_header('User-Agent', 'Mozilla/5.0')
+response = urlopen(request)
+print(response.read())
+
+
+
+
+
+
+
+try:
+    from urllib.parse import urlparse, urlunparse # Py3
+except:
+    from urlparse import urlparse, urlunparse # Py2
+
+'''
+parsed_url = urlparse(
+    'https://stackoverflow.com/questions/16627227/http-error-403-in-python-3-web-scraping/1?q=5&x=that#test',
+)
+
+to get different fragments of url
+print(parsed_url)
+print(parsed_url.scheme)
+print(parsed_url.netloc)
+print(parsed_url.path)
+print(parsed_url.params)
+print(parsed_url.query)
+print(parsed_url.fragment)
+
+'''
+parsed_url = urlparse(
+    'https://stackoverflow.com/questions/16627227/http-error-403-in-python-3-web-scraping/1?q=5&x=that#test',
+)
+
+
+#create a url example
+new_url = urlunparse((
+    'https',        # Scheme
+    'www.stackoverflow.com', #Netlock 
+    '/quiestions',      #path
+    None,               #params
+    'q=5&x=that',       #query (need to use url encode)
+    'test'              #Format
+    ))
+print(new_url)
+
+
+
+
+
+
+try:
+    from urllib.parse import urlencode
+except:
+    from urlparse import urlencode
+
+
+query_string = urlencode({'q': 15, 'action': 'something'})
+print(query_string)
+
+
+
+
+
+
+
+import requests
+
+#GET examples // Stream=True  make it a s tream
+response = requests.get('https://httpbin.org/something', stream=True)
+
+print(response.text) #hole html body
+print(response.status_code)
+print(response.headers)
+
+#POST examples
+response = requests.post('https://httpbin.org/something',
+                files={'file' : 'file content' },
+                data={'form_field_name': 'form_value'},
+                params={'q':5, 'action': 'delete'})
+
+print(response.text)
+
+# for stream data in upload
+#In python the with keyword is used when working with unmanaged resources (like file streams). 
+#It allows you to ensure that a resource is "cleaned up" when the code that uses it finishes 
+# running, even if exceptions are thrown. It provides 'syntactic sugar' for try/finally blocks.
+with open('large-file.txt', 'rb' ) as file_contents:
+    requests.post('https://httpbin.org/something', data=file_contents)
+
+
+
+
+
+
+
+
+import re
+
+data = 'adalsdalkjsd alkjsdl kasjdlk asjd<script>javacript \nhere </script>jkslf jsldkf sdakfj lskdfj '
+
+look_for = '<script(.|\n)*</script>'
+
+match = re.search(look_for, data)
+matching_text = match.group(0)
+print(matching_text)
+
+
+
+
+import requests
+from bs4 import BeautifulSoup
+'''
+soup.title
+soup.title.name
+soup.p
+soup.p['class']
+soup.find[id="link3"]
+soup.a
+'''
+
+response = requests.get('https://httpbin.org/')
+
+soup = BeautifulSoup(response.text)
+
+
+print(soup.prettify) # nicer version of html
+print(soup.title)
+
+#print all <a> elements of html
+for a in soup.find_all('a'):
+    print(a)
+    print(a.string)
+    print(a.get('href'))
+
+for img in soup.find_all('img'):
+    print(img.get('src'))
